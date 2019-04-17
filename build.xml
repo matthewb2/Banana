@@ -1,0 +1,30 @@
+<project name="JMenuBar">
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes">
+		  <compilerarg line="-Xlint" />
+		</javac>
+    	<copy todir="build/classes/oata">
+    				<fileset dir="src" includes="res/**/*.png"/>
+    	</copy>
+    </target>
+
+    <target name="jar">
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/JMenuBar.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="oata.Main"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run">
+        <java jar="build/jar/JMenuBar.jar" fork="true"/>
+    </target>
+
+</project>
