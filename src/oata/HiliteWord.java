@@ -1,7 +1,7 @@
 package oata;
 
 public class HiliteWord {
-	  int _position;  
+	    int _position;  
 	    String _word;
 
 	    public HiliteWord(String word, int position) {
