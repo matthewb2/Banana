@@ -2,6 +2,8 @@ package oata;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -45,15 +47,19 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.undo.UndoManager;
 
-import oata.KeywordStyledDocument;
-
-public class Banana extends JFrame  implements ActionListener, 
-MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, ListSelectionListener  {
+public class Banana extends JFrame  implements ActionListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, ListSelectionListener  {
+	  
 	  private static final long serialVersionUID = 1L;
+	  //
 	  final JPopupMenu popup = new JPopupMenu();
 	  private static final int MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 	  //
 	  private UndoManager undoManager = new UndoManager();
+	  final JTextPane pane;
+	  protected FindDialog m_findDialog;
+	  protected ReplaceDialog m_replaceDialog;
+	  
+	  public JTextPane getTextPane() { return pane; }
 	
 	  //Read file content into string with - Files.readAllBytes(Path path)
 	  private static String readAllBytesJava7(String filePath) 
@@ -74,12 +80,12 @@ MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, ListSelecti
 	  
 
 public Banana() {
-	 
-	   setTitle("Default Menu Application");
-	   
+	    //
+	    setTitle("바나나 텍스트 에디터");
+	    //
 		JFrame frame;  
 	    JMenuItem   new_blank, open, exit, close, about, random, deletefile, resize, save, saveas;
-	    JMenuItem   cut_text, paste_text, fullscreen, delete, previous, next;
+	    JMenuItem   cut_text, paste_text, find_text, replace_text, fullscreen, delete, previous, next;
 	    JFileChooser fc;
 	    JLabel jl;
 	    JLabel fjl;
@@ -90,14 +96,14 @@ public Banana() {
 	    StyleConstants.setForeground(cwStyle, Color.BLUE);
 	    StyleConstants.setBold(cwStyle, false);
 	    
-	    final JTextPane pane = new JTextPane();
+	    pane = new JTextPane();
         pane.setFont(new Font("돋움", Font.PLAIN, 14));
 
 	         
        //final JTextPane  editor__ = new JTextPane();
        JScrollPane editorScrollPane = new JScrollPane(pane);
 
-	   pane.setDocument(new KeywordStyledDocument(defaultStyle));
+	   pane.setDocument(new JavaTokenMarker(defaultStyle));
 	   
 	   
        // New project menu item
@@ -121,7 +127,7 @@ public Banana() {
 				
 				if(e.getButton() == java.awt.event.MouseEvent.BUTTON3){
 					showPopup(e);
-					System.out.println("eee");
+					//System.out.println("eee");
 					
 				}
 			}
@@ -183,37 +189,29 @@ public Banana() {
        pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MASK), "Undo");
       
        
-	   add(editorScrollPane, BorderLayout.CENTER);	
-	      
-       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-       
-       // size of frame
-       setSize(850,600);
-        
-       setVisible(true);
-       
+
        
        //menus
        
        JMenuBar menuBar = new JMenuBar();
        
-       JMenu menu1    = new JMenu("File");
+       JMenu menu1    = new JMenu("파일");
        menu1.setMnemonic('F');
        
        ImageIcon icon_new = new ImageIcon(getClass().getResource("res/new_blank.png"));
-       new_blank     = new JMenuItem("New", icon_new);
+       new_blank     = new JMenuItem("새문서", icon_new);
        new_blank.setMnemonic('N');
 
        menu1.add(new_blank);
 
        
        ImageIcon icon_open = new ImageIcon(getClass().getResource("res/folder.png"));
-       open     = new JMenuItem("Open", icon_open);
+       open     = new JMenuItem("열기", icon_open);
 
        menu1.add(open);
      
        ImageIcon icon_close = new ImageIcon(getClass().getResource("res/close.png"));
-       close     = new JMenuItem("Close", icon_close);
+       close     = new JMenuItem("닫기", icon_close);
        //close     = new JMenuItem("Close");
        close.setMnemonic('C');
        close.addActionListener(new ActionListener() {
@@ -231,12 +229,12 @@ public Banana() {
              
     
        
-       JMenu menu2    = new JMenu("Edit");
+       JMenu menu2    = new JMenu("편집");
                 
            
        menu2.setMnemonic('E');
        
-       cut_text     = new JMenuItem("Cut");
+       cut_text     = new JMenuItem("잘라내기");
        cut_text.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent ev) {
                    pane.cut();
@@ -245,27 +243,71 @@ public Banana() {
  	      
        menu2.add(cut_text);
        
-       paste_text     = new JMenuItem("Paste");
+       paste_text     = new JMenuItem("붙여넣기");
        paste_text.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent ev) {
         	   		pane.paste();
            }
        });
+       
+       
+       menu2.add(paste_text);
+       //
+       find_text     = new JMenuItem("찾기");
+       find_text.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent ev) {
+        	   if (m_findDialog==null)
+                   m_findDialog = new FindDialog(Banana.this, 0);
+                 else
+                   m_findDialog.setSelectedIndex(0);
+                 Dimension d1 = m_findDialog.getSize();
+                 Dimension d2 = Banana.this.getSize();
+                 int x = Math.max((d2.width-d1.width)/2, 0);
+                 int y = Math.max((d2.height-d1.height)/2, 0);
+                 m_findDialog.setBounds(x + Banana.this.getX(),
+                   y + Banana.this.getY(), d1.width, d1.height);
+                 m_findDialog.setVisible(true);
+           }
+       });
  	      
 
-       menu2.add(paste_text);
+       menu2.add(find_text);
+       
+       replace_text     = new JMenuItem("바꾸기");
+       replace_text.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent ev) {
+        	   if (m_replaceDialog==null)
+                   m_replaceDialog = new ReplaceDialog(Banana.this);
+        	       //d3 = new JDialog(d2, "", Dialog.ModalityType.DOCUMENT_MODAL);
+
+                 else{
+                   //m_replaceDialog.setSelectedIndex(0);
+                 }
+                 Dimension d1 = m_replaceDialog.getSize();
+                 Dimension d2 = Banana.this.getSize();
+                 int x = Math.max((d2.width-d1.width)/2, 0);
+                 int y = Math.max((d2.height-d1.height)/2, 0);
+                 m_replaceDialog.setBounds(x + Banana.this.getX(),
+                   y + Banana.this.getY(), d1.width, d1.height);
+                 m_replaceDialog.setVisible(true);
+           }
+       });
+ 	      
+
+       menu2.add(replace_text);
+       //
        menuBar.add(menu2);
        
       
-       JMenu menu3    = new JMenu("View");
+       JMenu menu3    = new JMenu("보기");
        menu3.setMnemonic('V');
        
        menuBar.add(menu3);
-       fullscreen     = new JMenuItem("Full Screen");
+       fullscreen     = new JMenuItem("전체 화면");
        menu3.add(fullscreen);
-       JMenu menu4    = new JMenu("Help");
+       JMenu menu4    = new JMenu("도움말");
        menu4.setMnemonic('H');
-       about     = new JMenuItem("About");
+       about     = new JMenuItem("정보");
        about.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent ev) {
               //     editor__.paste();
@@ -291,6 +333,22 @@ public Banana() {
    	    pane.getDocument().insertString(pane.getDocument().getLength(), str, null);
        }catch (Exception e){
        }
+       
+	   add(editorScrollPane, BorderLayout.CENTER);	
+	      
+       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+       
+       // size of frame
+       setSize(850,600);
+        
+       setVisible(true);
+
+       //setLocationRelativeTo(this);
+       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+       setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
+       
+       
+       
 		
     }
 
