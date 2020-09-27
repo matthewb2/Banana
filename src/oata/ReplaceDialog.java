@@ -167,19 +167,7 @@ public class ReplaceDialog extends JDialog {
 	           int end = m_owner.getTextPane().getSelectionEnd();
 	           System.out.println(start+" "+end);
 	           //this is important
-	           m_owner.getTextPane().replaceSelection("");
-	           
-	           try {
-				m_owner.getTextPane().getDocument().insertString(start, m_txtReplace2.getText(), null);
-				 
-	           } catch (BadLocationException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-	           }
-	      	   m_owner.pane.setSelectionStart(start);
-			   m_owner.pane.setSelectionEnd(start+m_txtReplace2.getText().length());
-	           
-			   m_replaceIndex = start+m_txtReplace2.getText().length();
+	           replaceEx(start, end);
 	         }
 	     });
 	             
@@ -209,6 +197,22 @@ public class ReplaceDialog extends JDialog {
 		 setLocationRelativeTo(this);
 		 //
 		 setVisible(false);
+	}
+	
+	public void replaceEx(int start, int end){
+		m_owner.getTextPane().replaceSelection("");
+        
+        try {
+			m_owner.getTextPane().getDocument().insertString(start, m_txtReplace2.getText(), null);
+			 
+        } catch (BadLocationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+        }
+   	   m_owner.pane.setSelectionStart(start);
+		   m_owner.pane.setSelectionEnd(start+m_txtReplace2.getText().length());
+        
+		   m_replaceIndex = start+m_txtReplace2.getText().length();
 	}
 	
 	public void findNext(boolean doReplace, boolean showWarnings) {
@@ -242,8 +246,14 @@ public class ReplaceDialog extends JDialog {
 			
 		 }
 		 //
-		 xStart = m_searchData.indexOf(key);
+		 findReplaceEx(pos, key, replacekey);
 		 
+	}
+	
+	protected void findReplaceEx(int pos, String key, String replacekey){
+		 
+		 int xStart = m_searchData.indexOf(key);
+		 int xFinish =0;
 		 if (xStart > 0){
 			 xStart += pos;			 
 			 if (m_replaceIndex != -1){
@@ -255,108 +265,93 @@ public class ReplaceDialog extends JDialog {
 			 m_owner.pane.setSelectionEnd(xFinish);
 			 
 		 } else if (xStart < 0) {
-			 if (showWarnings){
+			 
 				 setVisible(false);
 				 warning("문자열을 찾지 못 했습니다");
 				 m_searchIndex = -1;
 				 setVisible(true);
 				 if (m_searchIndex != -1){
-					 System.out.println(pos);
-					 //m_owner.pane.setCaretPosition(pos);
+					 //
 					 xFinish = pos+key.length();
 					 m_owner.pane.setSelectionStart(xStart);
 					 m_owner.pane.setSelectionEnd(xFinish);
 					 
 				 }
-			 }
-			
 		 }
-		
-		 
 	}
 	
 	protected void warning(String message) {
 		 JOptionPane.showMessageDialog(m_owner, message, "Warning", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
-	public int FindReplaceAll(boolean doReplace, boolean showWarnings) {
-		 JTextPane monitor = m_owner.getTextPane();
-		 //
-		 int pos = monitor.getCaretPosition();
+	public void FindReplaceAll(boolean doReplace, boolean showWarnings) {
 		 
-		 if (m_modelUp.isSelected() != m_searchUp) {
-		   m_searchUp = m_modelUp.isSelected();
-		 
-		 }
-		 
-		 while(true){
-			 try {
-				 Document doc = monitor.getDocument();
-				 if (m_searchUp)
-					 m_searchData = doc.getText(0, pos);
-				 else
-				     m_searchData = doc.getText(pos, doc.getLength()-pos);
-		     }
-			 catch (BadLocationException ex) {
-				 JOptionPane.showMessageDialog(m_owner, "", "Warning", JOptionPane.INFORMATION_MESSAGE);
-				 return -1;
-			 }
-			 
-			 String key = "";
-			 
+		 int start = m_owner.getTextPane().getSelectionStart();
+         int end = m_owner.getTextPane().getSelectionEnd();
+         System.out.println(start+" "+end);
+         //this is important
+         replaceEx(start, end);
+         //
+         while(true){
+			 JTextPane monitor = m_owner.getTextPane();
+			 String key = null;
+			 String replacekey = null;
+			 int xStart = -1;
+			 int xFinish = -1;
+			 int pos = monitor.getCaretPosition();
+			 //
+			 Document doc = monitor.getDocument();
+			 		 
 			 try { 
 			 	 key = m_docFind.getText(0, m_docFind.getLength()); 
+			 	 replacekey = m_txtReplace2.getText();
 			 }
 			 catch (BadLocationException ex){
-			 		
+			 }
+			 
+			 try {
+				m_searchData = doc.getText(pos, doc.getLength()-pos);
+				 
+			 } catch (BadLocationException e) {
+				// 
+				e.printStackTrace();
 			 }
 			 
 			 if (key.length()==0) {
 				 warning("검색할 문자열을 입력하십시오");
-				 return -1;
+				
 			 }
-			
-			 String replacement = "";
-			 if (doReplace) {
-				 try {
-					 replacement = m_docReplace.getText(0, 
-					 m_docReplace.getLength());
-		     } catch (BadLocationException ex) {}
-		     }
-			 
-		     // start searching
-			 int xStart = -1;
-			 int xFinish = -1;
-			 
-			 if (m_searchUp)
-				 xStart = m_searchData.lastIndexOf(key, pos-1);
-			 else
-				 xStart = m_searchData.indexOf(key, pos-m_searchIndex);
-			 
-			 if (xStart > 0) {
-				 //pos = xStart+m_txtReplace2.getText().length();
+			 //findReplaceEx(pos, key, replacekey);
+			 xStart = m_searchData.indexOf(key);
+			 xFinish =0;
+			 if (xStart > 0){
+				 xStart += pos;			 
+				 if (m_replaceIndex != -1){
+					 m_searchIndex = xStart+replacekey.length();
+				 } else m_searchIndex = xStart+key.length();
+				 //
 				 xFinish = xStart+key.length();
-				 System.out.println("bbb: "+xFinish);
+				 m_owner.pane.setSelectionStart(xStart);
+				 m_owner.pane.setSelectionEnd(xFinish);
+				 replaceEx(xStart, xFinish);
 				 
-				 pos = xFinish;
-			 }
-			 if (xStart < 0) {
-				 if (showWarnings){
-					 
-				 	 setVisible(false);
-			         JOptionPane.showMessageDialog(m_owner, "", "Warning", JOptionPane.INFORMATION_MESSAGE);
+			 } else if (xStart < 0) {
+				 
+					 setVisible(false);
+					 //warning("문자열을 찾지 못 했습니다");
+					 m_searchIndex = -1;
 					 setVisible(true);
+					 if (m_searchIndex != -1){
+						 //
+						 xFinish = pos+key.length();
+						 m_owner.pane.setSelectionStart(xStart);
+						 m_owner.pane.setSelectionEnd(xFinish);
+						 
+					 }
 					 break;
-					 
-				 }
-				 
-				 return 0;
 			 }
-			 
-			
-			 
-		 }
-		return 0;
+         }
+		 
 		 
 	}	     
 }
