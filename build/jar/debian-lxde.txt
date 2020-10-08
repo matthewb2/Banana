@@ -1,0 +1,152 @@
+﻿sudo apt install wget squshfs-tools genisoimage
+
+#os-relase
+mv os-relase
+cp os
+mv os-release
+
+#chroot를 위한 network 설정
+sudo rm edit/etc/resolv.conf
+
+sudo cp /etc/resolv.conf edit/etc/
+
+
+
+#바탕화면
+#sudo cp 1920x1080.svg /usr/share/desktop-base/active-theme/wallpaper/contents/images/
+#sudo cp 1920x1080.svg /usr/share/desktop-base/mk/wallpaper/contents/images/
+#sudo nano /etc/alternatives/desktop-theme/wallpaper/contents/images/
+sudo nano /etc/skel/.config/plasmrc
+
+
+
+#sddm theme
+#sudo apt install sddm sddm-theme-maui
+sudo update-alternatives --install /usr/share/sddm/themes/debian-theme sddm-debian-theme /usr/share/sddm/themes/chili 100
+현재설치된 sddm 테마 보기
+sudo update-alernatives --query sddm-debian-theme
+#테마선택
+sudo update-alernatives --config sddm-debian-theme
+
+#turn off beep sound
+xset b off
+xset b 0 0 0
+
+#메뉴아이콘 변경
+sudo cp image.svg /usr/share/icons/hicolor/scalable/apps/
+sudo mv image.svg linuxmint-logo-5.svg
+
+
+change boot up logo/splash image
+#sudo add-apt-repository ppa:mefrio-g/plymouthmanager
+#sudo apt-get update
+#sudo apt install plymouth-themes
+sudo plymouth-set-default-theme ubuntu-paw -R
+#sudo update-initramfs -u
+
+
+
+#chroot를 위한 network 설정
+sudo rm edit/etc/resolv.conf
+
+sudo cp /etc/resolv.conf edit/etc/
+sudo cp -r /var/lib edit/var/
+sudo cp -r /var/lib/dpkg edit/var/lib
+
+sudo mount --bind /dev edit/dev
+sudo mount --bind /dev/pts edit/dev/pts
+
+#sudo mount --bind /proc edit/proc
+#sudo mount --bind /sys edit/sys
+
+
+
+sudo chroot edit
+apt-get update
+
+
+#hangul
+sudo apt install language-packs-ko
+sudo apt-get install ibus-hangul ibus 
+
+#언어 설정에서 입력방법에 ibus 선택
+
+
+
+sudo cp etc/default/locale edit/etc/default/locale 
+
+
+sudo cp etc/init.d/keyhangul edit/etc/init.d/
+
+#reset locale
+dpkg-reconfigure locales
+update-locale LANG="ko_KR.UTF-8" LANGUAGE="ko_KR.UTF-8" LC_ALL="ko_KR.UTF-8"
+
+
+
+#시작프로그램에 한글키 매핑
+#/usr/bin/keyhangul 파일 생성
+#!/bin/sh
+setkeycodes 72 122
+exit 0
+#cd rc3.d
+sudo cp /usr/bin/keyhangul /etc/init.d/
+sudo update-rc.d keyhangul defaults
+
+
+#change sources.list
+
+
+#preseed에 언어를 한국어로 설정
+cd preseed
+d-i locale=ko_KR
+
+#아이콘 설치
+sudo cp -r /usr/share/icons/Suru++* edit/usr/share/icons/
+
+
+#turn off speaker beep sound
+xset -b
+
+#put installer to desktop
+install-debian.desktop
+./calamares
+
+
+
+#debian-installer logo initrd
+#sudo mkdir initrd
+
+mv initrd.img initrd.img.gz
+gunzip initrd.img.gz
+cpio -id < initrd.img
+#cd usr/share/graphics/debian-logo.png
+
+#create initrd.gz
+#su root
+#find . | cpio -o -H newc | gzip -9 > initrd.gz
+
+#change grub boot menu
+sudo nano extract/isolinux/menu.cfg
+
+
+#install jdk
+sudo vim /etc/apt/sources.list
+#The following repo:
+deb http://ftp.us.debian.org/debian sid main
+sudo apt-get update
+sudo apt-get install openjdk-8-jdk
+
+
+#설정파일 복사
+cp -r ~/.config/lxsession edit/etc/xdg/
+lxpanel
+pcman
+#설정을 기본설정으로 복사
+sudo cp -r ~/.config edit/etc/skel/
+
+
+
+#mk os neofetch
+sudo nano .bashrc
+alias neofetch='neofetch --ascii ~/.config/neofetch/mk'

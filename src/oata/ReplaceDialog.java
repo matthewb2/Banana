@@ -16,6 +16,7 @@ import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -216,7 +217,7 @@ public class ReplaceDialog extends JDialog {
 	}
 	
 	public void findNext(boolean doReplace, boolean showWarnings) {
-		 JTextPane monitor = m_owner.getTextPane();
+		 JEditorPane monitor = m_owner.getTextPane();
 		 String key = null;
 		 String replacekey = null;
 		 int xStart = -1;
@@ -293,7 +294,7 @@ public class ReplaceDialog extends JDialog {
          replaceEx(start, end);
          //
          while(true){
-			 JTextPane monitor = m_owner.getTextPane();
+        	 JEditorPane monitor = m_owner.getTextPane();
 			 String key = null;
 			 String replacekey = null;
 			 int xStart = -1;

@@ -17,6 +17,7 @@ import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -279,7 +280,7 @@ public class FindDialog  extends JDialog {
 	
 	//
 	public int findNext(boolean doReplace, boolean showWarnings) {
-			 JTextPane monitor = m_owner.getTextPane();
+			 JEditorPane monitor = m_owner.getTextPane();
 			 int pos = monitor.getCaretPosition();
 			 System.out.println(pos+"in find");
 			 if (m_modelUp.isSelected() != m_searchUp) {
