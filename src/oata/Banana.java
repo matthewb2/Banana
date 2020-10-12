@@ -7,6 +7,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -70,6 +71,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -87,6 +89,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  static JEditorPane pane=null;
 	  protected FindDialog m_findDialog;
 	  protected ReplaceDialog m_replaceDialog;
+	  protected LetterDialog m_letterDialog;
+	  protected FontChooserDialog m_fontchDialog;
 	  
 	  protected static File filePath=null;
 	  protected static String fileName, fileContent=null;
@@ -372,6 +376,26 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	 	      
 	       menu2.add(replace_text);
 	       menuBar.add(menu2);
+	       
+	       
+	       
+	       JMenu menu6    = new JMenu("서식(O)");
+	       menu6.setMnemonic('O');
+	       JMenuItem letterview     = new JMenuItem("글꼴(F)");
+	       letterview.setMnemonic('F');
+	       letterview.addActionListener(new ActionListener() {
+	           public void actionPerformed(ActionEvent ev) {
+	        	    //convert utf-8 to ansi 
+				    //String res = convertFromUtf8ToIso(pane.getText());
+
+	        	    //m_letterDialog = new LetterDialog(Banana.this, 0);
+	        	   m_fontchDialog = new FontChooserDialog(Banana.this);
+	        	   					    
+	           }
+	       });
+	       
+	       menu6.add(letterview);
+	       menuBar.add(menu6);
 	       
 	       JMenu menu5    = new JMenu("인코딩(N)");
            menu5.setMnemonic('N');
