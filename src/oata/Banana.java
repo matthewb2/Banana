@@ -12,6 +12,8 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -68,13 +70,17 @@ import javax.swing.event.MenuListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.Utilities;
 import javax.swing.undo.UndoManager;
 
@@ -91,6 +97,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  protected ReplaceDialog m_replaceDialog;
 	  protected LetterDialog m_letterDialog;
 	  protected FontChooserDialog m_fontchDialog;
+	  
+	  protected int m_pos=0;
 	  
 	  protected static File filePath=null;
 	  protected static String fileName, fileContent=null;
@@ -123,6 +131,24 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		    byte[] b = s.getBytes(StandardCharsets.ISO_8859_1);
 		    return new String(b, StandardCharsets.ISO_8859_1);
 	  }
+	  
+	  protected void setAttributeSet(AttributeSet attr) throws BadLocationException {
+  	    int xStart = pane.getSelectionStart();
+  	    int xFinish = pane.getSelectionEnd();
+  	    System.out.println("start: "+xStart+ " end: "+xFinish);
+  	    if (!pane.hasFocus()) {
+  	    }
+  	    StyledDocument doc = (StyledDocument) pane.getDocument();
+  	    if (xStart != xFinish) {
+  	    
+  	      doc.setCharacterAttributes(xStart, xFinish - xStart, 
+  	        attr, false);
+  	    }
+  	    else doc.setCharacterAttributes(0, doc.getLength(), attr, false);
+  	    
+  	    
+	  }
+  
 	  
 	  public void openEx() throws BadLocationException{
 			JFileChooser chooser = new JFileChooser();
@@ -203,7 +229,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		    }
 		    
 	  }
-	  
+	  /*
 	  public void createMenu(){
 		   //menus
 		   JMenuItem   new_blank, open, saveas, exit, close, about, random, deletefile, resize;
@@ -385,12 +411,53 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       letterview.setMnemonic('F');
 	       letterview.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
-	        	    //convert utf-8 to ansi 
-				    //String res = convertFromUtf8ToIso(pane.getText());
+	        	   
+	        	   m_pos = pane.getCaretPosition();
 
-	        	    //m_letterDialog = new LetterDialog(Banana.this, 0);
-	        	   m_fontchDialog = new FontChooserDialog(Banana.this);
-	        	   					    
+	        	   final FontChooserDialog fontchDialog = new FontChooserDialog(Banana.this);
+	        	   //
+	        	   fontchDialog.addComponentListener(new ComponentListener() {										
+	        		   			
+		 					    public void componentHidden(ComponentEvent e)
+		 					    {
+		 					    	//
+									System.out.println(fontchDialog.getFont().getFontName());
+									System.out.println(fontchDialog.getFont().getSize());
+									System.out.println(fontchDialog.getFont().isBold());
+									System.out.println(fontchDialog.getFont().isItalic());
+									System.out.println(fontchDialog.getFont().isPlain());
+		 					    	fontchDialog.dispose();
+		 					    	//pane.setCaretPosition(m_pos);
+		 					    	//
+		 					    	String font = fontchDialog.getFont().getFontName();
+		 					    	int fontsize =  fontchDialog.getFont().getSize();
+		 					    	//
+		 					    	MutableAttributeSet attr = new SimpleAttributeSet();
+		 					        StyleConstants.setFontFamily(attr, font);
+		 					        StyleConstants.setFontSize(attr, fontsize);
+		 					        setAttributeSet(attr);
+		 					    	
+		 					    }
+
+								@Override
+								public void componentMoved(ComponentEvent arg0) {
+									// TODO Auto-generated method stub
+									//System.out.println("ddd");
+								}
+
+								@Override
+								public void componentResized(ComponentEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+
+								@Override
+								public void componentShown(ComponentEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+						});
+	           
 	           }
 	       });
 	       
@@ -464,7 +531,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       
 	       setJMenuBar(menuBar);	  
 	  }
-	  
+	  */
 	  public static int getCaretRowPosition(JTextComponent src) throws BadLocationException {
 		    
 		    int caretPos = pane.getCaretPosition();
@@ -556,8 +623,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		   
 		   columntextlabel = new JLabel();
 	       rowtextlabel = new JLabel();
-	       JMenuItem menuItem = new JMenuItem("복사(C)",
-	               new ImageIcon("images/newproject.png"));
+	       JMenuItem menuItem = new JMenuItem("복사(C)", new ImageIcon("images/newproject.png"));
 	       menuItem.setMnemonic(KeyEvent.VK_C);
 	       
 	       menuItem.addActionListener(new ActionListener() {
@@ -567,13 +633,15 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       });
 	       popup.add(menuItem);
 	       
+	       
 	       StyleContext styleContext = new StyleContext();
 		   
 		   Style defaultStyle = styleContext.getStyle(StyleContext.DEFAULT_STYLE);
 		   Style cwStyle = styleContext.addStyle("ConstantWidth", null);
 		   StyleConstants.setForeground(cwStyle, Color.BLUE);
 		   StyleConstants.setBold(cwStyle, false);
-		    
+		   //StyleConstants.setFontFamily(arg0, arg1);
+		   
 		   pane = new JTextPane();
 	       
 	       if (fileName !=null){
@@ -617,7 +685,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		    		   break;
 		    		   
 		       }
-		    	   
+		       //
+		          
 		       try{
 		   	    pane.getDocument().insertString(pane.getDocument().getLength(), str, null);
 		   	    //convert utf-8 to ansi 
@@ -711,7 +780,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       });
 	       pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MASK), "Undo");
 	       createStausBar();
-	       createMenu();
+	       //createMenu();
+	       MenuEx me = new MenuEx(Banana.this);
 	       
 	       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	       setSize(650,550);
