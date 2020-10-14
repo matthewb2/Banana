@@ -1,5 +1,7 @@
 package oata;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -17,6 +19,8 @@ import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
@@ -34,7 +38,7 @@ public class MenuEx {
 	}
 	public void createMenu(){
 		   //menus
-		   JMenuItem   new_blank, open, saveas, exit, close, about, random, deletefile, resize;
+		   JMenuItem   new_blank, open, saveas, pagesetup, printex, exit, close, about, random, deletefile, resize;
 		   final JMenuItem save;
 		   JMenuItem   cut_text, paste_text, find_text, replace_text, fullscreen, delete, previous, next;
 		   JMenuBar menuBar = new JMenuBar();
@@ -68,7 +72,7 @@ public class MenuEx {
 	    	   	 	save.setEnabled(false);
 	    	   	 	//
 	    	   	 	if (owner.fileContent !=null){
-	    	   	 		if (owner.fileContent.equals(pane.getText())){
+	    	   	 		if (owner.fileContent.equals(owner.pane.getText())){
 	    	        	 save.setEnabled(false);
 	    	   	 		}
 	    	   	 		else {
@@ -132,6 +136,15 @@ public class MenuEx {
 	           }
 	       });
 	       menu1.add(saveas);
+	       
+	       pagesetup     = new JMenuItem("페이지 설정(U)");
+	       pagesetup.setMnemonic('U');
+	       menu1.add(pagesetup);
+	       
+	       ImageIcon icon_printex = new ImageIcon(getClass().getResource("res/print.png"));
+	       printex     = new JMenuItem("인쇄(P)", icon_printex);
+	       printex.setMnemonic('P');
+	       menu1.add(printex);
 	     
 	       ImageIcon icon_close = new ImageIcon(getClass().getResource("res/close.png"));
 	       close     = new JMenuItem("닫기(C)", icon_close);
@@ -209,6 +222,27 @@ public class MenuEx {
 	       
 	       JMenu menu6    = new JMenu("서식(O)");
 	       menu6.setMnemonic('O');
+	       
+	       final JCheckBoxMenuItem autopara = new JCheckBoxMenuItem("자동 줄바꿈(W)");
+	       autopara.setMnemonic('W');
+	       autopara.setSelected(false);
+	       autopara.addActionListener(new ActionListener() {
+	           public void actionPerformed(ActionEvent ev) {
+	        	   if (autopara.isSelected()) {
+	      	    		//statusp.setVisible(true);
+	      	    		owner.editorScrollPane.setViewportView(owner.pane);
+	      	    	} else {
+	      	    		//statusp.setVisible(false);
+	      	    		//noWrapPanel = new JPanel( new BorderLayout() );
+	      			    owner.noWrapPanel.add(owner.pane );
+	      	    		owner.editorScrollPane.setViewportView(owner.noWrapPanel);
+	      	    	}
+	               
+	           }
+	       });
+	       
+	       menu6.add(autopara);
+	       
 	       JMenuItem letterview     = new JMenuItem("글꼴(F)");
 	       letterview.setMnemonic('F');
 	       letterview.addActionListener(new ActionListener() {
@@ -223,13 +257,6 @@ public class MenuEx {
 		 					    public void componentHidden(ComponentEvent e)
 		 					    {
 		 					    	//
-									System.out.println(fontchDialog.getFont().getFontName());
-									System.out.println(fontchDialog.getFont().getSize());
-									System.out.println(fontchDialog.getFont().isBold());
-									System.out.println(fontchDialog.getFont().isItalic());
-									System.out.println(fontchDialog.getFont().isPlain());
-		 					    	//fontchDialog.dispose();
-		 					    	//pane.setCaretPosition(m_pos);
 		 					    	//
 		 					    	if (fontchDialog.getReturnStatus() == 1){
 			 					    	String font = fontchDialog.getFont().getFontName();
@@ -252,7 +279,7 @@ public class MenuEx {
 								@Override
 								public void componentMoved(ComponentEvent arg0) {
 									// TODO Auto-generated method stub
-									//System.out.println("ddd");
+									
 								}
 
 								@Override
@@ -281,9 +308,7 @@ public class MenuEx {
 	       ansiview.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
 	        	    //convert utf-8 to ansi 
-				    //String res = convertFromUtf8ToIso(pane.getText());
 				    //
-				    //pane.setText(res);
 				    
 	           }
 	       });

@@ -99,6 +99,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  protected FontChooserDialog m_fontchDialog;
 	  
 	  protected int m_pos=0;
+	  public JScrollPane editorScrollPane;
+	  public JPanel noWrapPanel;
 	  
 	  protected static File filePath=null;
 	  protected static String fileName, fileContent=null;
@@ -141,14 +143,17 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
   	    StyledDocument doc = (StyledDocument) pane.getDocument();
   	    if (xStart != xFinish) {
   	    
-  	      doc.setCharacterAttributes(xStart, xFinish - xStart, 
-  	        attr, false);
+  	      doc.setCharacterAttributes(xStart, xFinish - xStart, attr, false);
   	    }
-  	    else doc.setCharacterAttributes(0, doc.getLength(), attr, false);
+  	    else {
+  	    	//doc.setCharacterAttributes(0, doc.getLength(), attr, true);
+  	    	((JTextPane) pane).setParagraphAttributes(attr, true);
+  	    	
+  	    }
   	    
   	    
 	  }
-  
+ 
 	  
 	  public void openEx() throws BadLocationException{
 			JFileChooser chooser = new JFileChooser();
@@ -204,7 +209,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 			{
 			  public void propertyChange(PropertyChangeEvent evt)
 			  {
-			    //System.out.println(chooser.getFileFilter().toString());
+			    //
 			    if (chooser.getFileFilter().toString().contains("AcceptAll")){
 			    	chooser.setSelectedFile(new File("*.*"));
 			    } else chooser.setSelectedFile(new File("*.txt"));
@@ -229,309 +234,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		    }
 		    
 	  }
-	  /*
-	  public void createMenu(){
-		   //menus
-		   JMenuItem   new_blank, open, saveas, exit, close, about, random, deletefile, resize;
-		   final JMenuItem save;
-		   JMenuItem   cut_text, paste_text, find_text, replace_text, fullscreen, delete, previous, next;
-		   JMenuBar menuBar = new JMenuBar();
-	       
-	       JMenu menu1    = new JMenu("파일(F)");
-	       menu1.setMnemonic('F');
-	       
-	       ImageIcon icon_save = new ImageIcon(getClass().getResource("res/save.png"));
-	       save     = new JMenuItem("저장(S)", icon_save);
-	       save.setMnemonic('S');
-	       save.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	   try {
-						try {
-							saveEx();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					} catch (BadLocationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	        	   
-	           }
-	       });
-	       
-	       menu1.addMenuListener(new MenuListener() {
-	    	      public void menuSelected(MenuEvent e) {
-	    	        //
-	    	   	 	save.setEnabled(false);
-	    	   	 	//
-	    	   	 	if (fileContent !=null){
-	    	   	 		if (fileContent.equals(pane.getText())){
-	    	        	 save.setEnabled(false);
-	    	   	 		}
-	    	   	 		else {
-	    	        	 save.setEnabled(true);
-	    	   	 		}
-	    	        } 
-	    	      }
-
-				@Override
-				public void menuCanceled(MenuEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void menuDeselected(MenuEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-	       });
-	       
-	       ImageIcon icon_new = new ImageIcon(getClass().getResource("res/new_blank.png"));
-	       new_blank     = new JMenuItem("새문서(N)", icon_new);
-	       new_blank.setMnemonic('N');
-	       KeyStroke ctrlN = KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask());
-	       //set the accelerator
-	       new_blank.setAccelerator(ctrlN);
-	
-	       menu1.add(new_blank);
-	       ImageIcon icon_open = new ImageIcon(getClass().getResource("res/folder.png"));
-	       open     = new JMenuItem("열기(O)", icon_open);
-	       open.setMnemonic('O');
-	       KeyStroke ctrlO = KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask());
-	       open.setAccelerator(ctrlO);
-	       open.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	   	  try {
-	        	   		  openEx();
-	        	   	  } catch (BadLocationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-	        	   	  }
-	        	   
-	           }
-	       });
-	       menu1.add(open);
-	       menu1.add(save);
-	       //
-	       saveas     = new JMenuItem("다른 이름으로 저장(A)", icon_open);
-	       saveas.setMnemonic('A');
-	       KeyStroke ctrlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask());
-	       saveas.setAccelerator(ctrlA);
-	       saveas.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-					try {
-						saveAs();
-					} catch (BadLocationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	           }
-	       });
-	       menu1.add(saveas);
-	     
-	       ImageIcon icon_close = new ImageIcon(getClass().getResource("res/close.png"));
-	       close     = new JMenuItem("닫기(C)", icon_close);
-	       //
-	       close.setMnemonic('C');
-	       close.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	                   System.exit(0);
-	           }
-	       });
-	 	      
-	       menu1.add(close);
-	       menuBar.add(menu1);
-	       
-	       JMenu menu2    = new JMenu("편집(E)");
-	       menu2.setMnemonic('E');
-	       cut_text     = new JMenuItem("잘라내기(C)");
-	       cut_text.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	                   pane.cut();
-	           }
-	       });
-	       menu2.add(cut_text);
-	       paste_text     = new JMenuItem("붙여넣기(P)");
-	       paste_text.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	   		pane.paste();
-	           }
-	       });
-	       
-	       menu2.add(paste_text);
-	       //
-	       find_text     = new JMenuItem("찾기(F)");
-	       KeyStroke ctrlF = KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask());
-	       find_text.setAccelerator(ctrlF);
-	       find_text.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	   if (m_findDialog==null)
-	                   m_findDialog = new FindDialog(Banana.this, 0);
-	                 else
-	                   m_findDialog.setSelectedIndex(0);
-	                 Dimension d1 = m_findDialog.getSize();
-	                 Dimension d2 = Banana.this.getSize();
-	                 int x = Math.max((d2.width-d1.width)/2, 0);
-	                 int y = Math.max((d2.height-d1.height)/2, 0);
-	                 m_findDialog.setBounds(x + Banana.this.getX(),
-	                   y + Banana.this.getY(), d1.width, d1.height);
-	                 m_findDialog.setVisible(true);
-	           }
-	       });
-	
-	       menu2.add(find_text);
-	       
-	       replace_text     = new JMenuItem("바꾸기(R)");
-	       replace_text.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	   if (m_replaceDialog==null)
-	                   m_replaceDialog = new ReplaceDialog(Banana.this);
-	               else{
-	                 }
-	                 Dimension d1 = m_replaceDialog.getSize();
-	                 Dimension d2 = Banana.this.getSize();
-	                 int x = Math.max((d2.width-d1.width)/2, 0);
-	                 int y = Math.max((d2.height-d1.height)/2, 0);
-	                 m_replaceDialog.setBounds(x + Banana.this.getX(),
-	                   y + Banana.this.getY(), d1.width, d1.height);
-	                 m_replaceDialog.setVisible(true);
-	           }
-	       });
-	 	      
-	       menu2.add(replace_text);
-	       menuBar.add(menu2);
-	       
-	       
-	       
-	       JMenu menu6    = new JMenu("서식(O)");
-	       menu6.setMnemonic('O');
-	       JMenuItem letterview     = new JMenuItem("글꼴(F)");
-	       letterview.setMnemonic('F');
-	       letterview.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	   
-	        	   m_pos = pane.getCaretPosition();
-
-	        	   final FontChooserDialog fontchDialog = new FontChooserDialog(Banana.this);
-	        	   //
-	        	   fontchDialog.addComponentListener(new ComponentListener() {										
-	        		   			
-		 					    public void componentHidden(ComponentEvent e)
-		 					    {
-		 					    	//
-									System.out.println(fontchDialog.getFont().getFontName());
-									System.out.println(fontchDialog.getFont().getSize());
-									System.out.println(fontchDialog.getFont().isBold());
-									System.out.println(fontchDialog.getFont().isItalic());
-									System.out.println(fontchDialog.getFont().isPlain());
-		 					    	fontchDialog.dispose();
-		 					    	//pane.setCaretPosition(m_pos);
-		 					    	//
-		 					    	String font = fontchDialog.getFont().getFontName();
-		 					    	int fontsize =  fontchDialog.getFont().getSize();
-		 					    	//
-		 					    	MutableAttributeSet attr = new SimpleAttributeSet();
-		 					        StyleConstants.setFontFamily(attr, font);
-		 					        StyleConstants.setFontSize(attr, fontsize);
-		 					        setAttributeSet(attr);
-		 					    	
-		 					    }
-
-								@Override
-								public void componentMoved(ComponentEvent arg0) {
-									// TODO Auto-generated method stub
-									//System.out.println("ddd");
-								}
-
-								@Override
-								public void componentResized(ComponentEvent arg0) {
-									// TODO Auto-generated method stub
-									
-								}
-
-								@Override
-								public void componentShown(ComponentEvent arg0) {
-									// TODO Auto-generated method stub
-									
-								}
-						});
-	           
-	           }
-	       });
-	       
-	       menu6.add(letterview);
-	       menuBar.add(menu6);
-	       
-	       JMenu menu5    = new JMenu("인코딩(N)");
-           menu5.setMnemonic('N');
-	       menuBar.add(menu5);
-	       JMenuItem ansiview     = new JMenuItem("ANSI로 표시");
-	       ansiview.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	    //convert utf-8 to ansi 
-				    String res = convertFromUtf8ToIso(pane.getText());
-				    //
-				    pane.setText(res);
-				    
-	           }
-	       });
-	       
-	       menu5.add(ansiview);
-	       JMenuItem utf8view     = new JMenuItem("UTF-8로 표시");
-	       utf8view.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	        	    //convert ansi to utf-8
-				    String rawString = pane.getText();
-					ByteBuffer buffer = StandardCharsets.UTF_8.encode(rawString); 
-					String utf8EncodedString = StandardCharsets.UTF_8.decode(buffer).toString();
-					pane.setText(utf8EncodedString);
-					//
-	           }
-	       });
-	       menu5.add(utf8view);
-	       
-	       JMenu menu3    = new JMenu("보기(V)");
-	       menu3.setMnemonic('V');
-	       menuBar.add(menu3);
-	       
-	       final JCheckBoxMenuItem statusmode = new JCheckBoxMenuItem("상태표시줄(B)");
-	          statusmode.setMnemonic(KeyEvent.VK_B);
-	          statusmode.setSelected(true);
-	          statusmode.addActionListener(new ActionListener() {
-	      	     @Override
-	      	     public void actionPerformed(ActionEvent e) {
-	      	    	if (statusmode.isSelected()) {
-	      	    		statusp.setVisible(true);
-	      	    		show_status_info(pane);
-	      	    	} else {
-	      	    		statusp.setVisible(false);
-	      	    	}
-	      	    	
-	      	     }
-	          });
-	       menu3.add(statusmode);
-	       
-	       JMenu menu4    = new JMenu("도움말(H)");
-	       menu4.setMnemonic('H');
-	       about     = new JMenuItem("정보(A)");
-	       about.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent ev) {
-	         	  AboutDialog ab = new AboutDialog();
-	              ab.version = "버전  0.2 엠케이솔루션 제공";
-	              ab.showDialog();
-	              ab.setVisible(true);
-	           }
-	       });
-	 	      
-	       about.setMnemonic('A');
-	       menu4.add(about);
-	       menuBar.add(menu4);
-	       
-	       setJMenuBar(menuBar);	  
-	  }
-	  */
+	  
 	  public static int getCaretRowPosition(JTextComponent src) throws BadLocationException {
 		    
 		    int caretPos = pane.getCaretPosition();
@@ -640,9 +343,11 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		   Style cwStyle = styleContext.addStyle("ConstantWidth", null);
 		   StyleConstants.setForeground(cwStyle, Color.BLUE);
 		   StyleConstants.setBold(cwStyle, false);
-		   //StyleConstants.setFontFamily(arg0, arg1);
+		   //
 		   
 		   pane = new JTextPane();
+		   noWrapPanel = new JPanel( new BorderLayout() );
+		   noWrapPanel.add(pane );
 	       
 	       if (fileName !=null){
 	    	   
@@ -715,7 +420,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	    	   pane.setFont(pane.getFont().deriveFont(15f));
 	       }
 	       
-	       JScrollPane editorScrollPane = new JScrollPane(pane);
+	       //JScrollPane editorScrollPane = new JScrollPane(pane);
+	       editorScrollPane = new JScrollPane(noWrapPanel );
 		   //
 		   add(editorScrollPane, BorderLayout.CENTER);	
 		       
@@ -823,7 +529,27 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 					
 				}
 	       });
-       
+	       pane.addKeyListener(new KeyListener(){
+
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+	    	   
+	       });
     }
 
 	
