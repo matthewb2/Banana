@@ -137,7 +137,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  protected void setAttributeSet(AttributeSet attr) throws BadLocationException {
   	    int xStart = pane.getSelectionStart();
   	    int xFinish = pane.getSelectionEnd();
-  	    System.out.println("start: "+xStart+ " end: "+xFinish);
+  	    //System.out.println("start: "+xStart+ " end: "+xFinish);
   	    if (!pane.hasFocus()) {
   	    }
   	    StyledDocument doc = (StyledDocument) pane.getDocument();
@@ -233,6 +233,19 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 				}
 		    }
 		    
+	  }
+	  
+	  public void checkWrite(){
+		  if (filePath.canWrite()){
+	           //System.out.println(filePath.getAbsolutePath() + ": CAN WRITE!!!");
+		  }else {
+	    	   int result = JOptionPane.showConfirmDialog(null, "쓰기 권한이 없습니다. 읽기 전용으로 열까요?", "Confirm", 
+								JOptionPane.YES_NO_OPTION);
+	    	   if(result == JOptionPane.CLOSED_OPTION){
+					//tf.setText("Just Closed without Selection");
+	    	   }
+				
+	       }
 	  }
 	  
 	  public static int getCaretRowPosition(JTextComponent src) throws BadLocationException {
@@ -357,20 +370,12 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		       BufferedReader br = new BufferedReader(new FileReader(file)); 
 		       String st; 
 		       while ((st = br.readLine()) != null){ 
-		         System.out.println(str);
+		         //System.out.println(str);
 		       	 str +=st+"\n\r";
 		       } 
 		       //
-		       if (filePath.canWrite())
-		           System.out.println(filePath.getAbsolutePath() + ": CAN WRITE!!!");
-		       else {
-		    	   int result = JOptionPane.showConfirmDialog(null, "쓰기 권한이 없습니다. 읽기 전용으로 열까요?", "Confirm", 
-									JOptionPane.YES_NO_OPTION);
-		    	   if(result == JOptionPane.CLOSED_OPTION){
-						//tf.setText("Just Closed without Selection");
-		    	   }
-					
-		       }
+		       checkWrite();
+		       
 		       //
 		       String extension = "";
 		       int i = fileName.lastIndexOf('.');
@@ -408,12 +413,13 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		       
 	       } else {
 	    	   setTitle("제목 없음 - 바나나 텍스트 에디터");
+	    	   fileContent = "";
 	       }
 	       
 	       String os = System.getenv("OS");
 	       if (os != null){
 	    	   if (os.matches("(.*)Windows(.*)")){
-		    	   System.out.println(System.getenv("OS"));   
+		    	   //System.out.println(System.getenv("OS"));   
 		    	   pane.setFont(new Font("Arial", Font.PLAIN, 15));
 	    	   }
 	       } else {

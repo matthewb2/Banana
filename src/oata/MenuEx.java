@@ -19,6 +19,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
@@ -144,16 +145,55 @@ public class MenuEx {
 	       ImageIcon icon_printex = new ImageIcon(getClass().getResource("res/print.png"));
 	       printex     = new JMenuItem("인쇄(P)", icon_printex);
 	       printex.setMnemonic('P');
+	       
+	       printex.addActionListener(new ActionListener() {
+	           public void actionPerformed(ActionEvent ev) {
+				       
+				       try {
+			               owner.pane.setContentType("text/plain");
+			
+			               boolean done = owner.pane.print();
+			               if (done) {
+			                   JOptionPane.showMessageDialog(null, "인쇄가 완료되었습니다");
+			               } else {
+			                   JOptionPane.showMessageDialog(null, "인쇄 중 오류가 발생하였습니다");
+			               }
+			           } catch (Exception pex) {
+			               JOptionPane.showMessageDialog(null, "인쇄 중 오류가 발생하였습니다");
+			               pex.printStackTrace();
+			           }
+	           }
+	       });
 	       menu1.add(printex);
+	       
+	       
 	     
 	       ImageIcon icon_close = new ImageIcon(getClass().getResource("res/close.png"));
 	       close     = new JMenuItem("닫기(C)", icon_close);
-	       //
 	       close.setMnemonic('C');
 	       close.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
-	                   System.exit(0);
-	           }
+	               //System.exit(0);
+	        	   if (owner.fileContent.equals(owner.pane.getText()))
+			           owner.dispose();
+	        	   else {
+			    	   int result = JOptionPane.showConfirmDialog(null, "변경 내용을"+owner.filePath.getAbsolutePath()+"에 저장할까요?", "바나나에디터", 
+										JOptionPane.YES_NO_CANCEL_OPTION);
+			    	   if(result == JOptionPane.NO_OPTION)
+						   owner.dispose();
+			    	   else if(result == JOptionPane.CANCEL_OPTION)
+						   JOptionPane.getRootFrame().dispose();
+			    	   else if(result == JOptionPane.YES_OPTION){
+							//tf.setText("Just Closed without Selection");
+			    		   try {
+			    			   owner.saveEx();
+			    		   } catch (BadLocationException | IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+			    		   }
+			    	   }
+			       }
+			    }
 	       });
 	 	      
 	       menu1.add(close);
