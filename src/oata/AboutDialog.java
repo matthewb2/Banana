@@ -128,7 +128,7 @@ public class AboutDialog  extends JFrame{
        add(tab);
     
        //frame.pack();
-       setSize(410, 390);
+       setSize(410, 400);
        setResizable(false);
        
        setLocationRelativeTo(this);

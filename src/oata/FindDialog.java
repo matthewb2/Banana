@@ -1,6 +1,7 @@
 package oata;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -28,11 +29,18 @@ import javax.swing.JTextPane;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 public class FindDialog  extends JDialog {
 	
 	protected Banana m_owner;
+	protected RSyntaxTextArea m_textArea;
 	protected JTabbedPane m_tb;
 	protected JTextField m_txtFind1;
 	protected JTextField m_txtFind2, m_txtReplace2;
@@ -47,10 +55,11 @@ public class FindDialog  extends JDialog {
 	protected boolean m_searchUp = false;
 	protected String  m_searchData;
 
-	public FindDialog(Banana owner, int index) {
+	public FindDialog(Banana owner, RSyntaxTextArea textArea, int index) {
 	 super();
 	 
 	 m_owner = owner;
+	 m_textArea = textArea;
 	 m_tb = new JTabbedPane();
 	 JButton btn1 = new JButton("다음");
 	 JButton btn2 = new JButton("닫기");
@@ -100,6 +109,19 @@ public class FindDialog  extends JDialog {
 	 bg.add(rdDown);
 	 po.add(rdDown);
 	 lb.add(po);
+	 
+	 m_txtFind1.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+             String text = m_txtFind1.getText();
+             if (text.length()>0) {
+             //m_txtFind1.setText("입력 결과: " + text);
+             //m_txtFind1.setText(""); // 입력 후 텍스트 필드 초기화
+             findNext(false, true);
+             }
+             
+         }
+     });
 	 
 	 btn1.setSize(new Dimension(100, 150));
      
@@ -280,7 +302,8 @@ public class FindDialog  extends JDialog {
 	
 	//
 	public int findNext(boolean doReplace, boolean showWarnings) {
-			 JEditorPane monitor = m_owner.getTextPane();
+			 //JEditorPane monitor = m_owner.getTextPane();
+			 RSyntaxTextArea monitor = m_textArea; 
 			 int pos = monitor.getCaretPosition();
 			 System.out.println(pos+"in find");
 			 if (m_modelUp.isSelected() != m_searchUp) {
@@ -385,12 +408,15 @@ public class FindDialog  extends JDialog {
 		   //m_owner.setSelection(xStart, xFinish, m_searchUp);
 		   monitor.replaceSelection(replacement);
 		   //m_owner.setSelection(xStart, xStart+replacement.length(), 
-		   //m_searchUp);
 		   m_searchIndex = -1;
 		 }
 		 else{
-		     //m_owner.setSelection(xStart, xFinish, m_searchUp);
-			 System.out.println(xStart+" "+xFinish);
+		     	//System.out.println(xStart+" "+xFinish);
+			    try {
+	               m_textArea.select(xStart, xFinish);
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
 		 }
 		 return 1;
 		

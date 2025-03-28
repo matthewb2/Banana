@@ -29,8 +29,11 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+
 public class ReplaceDialog extends JDialog {
 	protected Banana m_owner;
+	protected RSyntaxTextArea m_textArea;
 	protected JTabbedPane m_tb;
 	protected JTextField m_txtFind1;
 	protected JTextField m_txtFind2, m_txtReplace2;
@@ -46,7 +49,7 @@ public class ReplaceDialog extends JDialog {
 	protected boolean m_searchUp = false;
 	protected String  m_searchData;
 	
-	public ReplaceDialog(Banana banana) {
+	public ReplaceDialog(Banana banana, RSyntaxTextArea textArea) {
 		 super();
 		 //
 		 setModal(false);
@@ -54,6 +57,7 @@ public class ReplaceDialog extends JDialog {
 		 //
 		 setTitle("바꾸기");
 		 m_owner = banana;
+		 m_textArea = textArea;
 		 m_tb = new JTabbedPane();
 		 JButton btnFindNext = new JButton("다음 찾기");
 		 JButton btnReplace = new JButton("바꾸기");
@@ -164,8 +168,11 @@ public class ReplaceDialog extends JDialog {
 	         public void actionPerformed(ActionEvent e)
 	         {
 	           //replace
-	           int start = m_owner.getTextPane().getSelectionStart();
-	           int end = m_owner.getTextPane().getSelectionEnd();
+	           //int start = m_owner.getTextPane().getSelectionStart();
+	           int start = m_textArea.getSelectionStart();
+	           //int end = m_owner.getTextPane().getSelectionEnd();
+	           int end = m_textArea.getSelectionEnd();
+	        	 
 	           System.out.println(start+" "+end);
 	           //this is important
 	           replaceEx(start, end);
@@ -173,7 +180,7 @@ public class ReplaceDialog extends JDialog {
 	     });
 	             
 	     JPanel btg = new JPanel();
-	     //align all buttons and fit them.
+	     //
 	     btg.setLayout(new BoxLayout(btg, BoxLayout.Y_AXIS));
 	     Dimension d = btnReplaceAll.getMaximumSize();
 	     btnFindNext.setMaximumSize(new Dimension(d));
@@ -191,33 +198,32 @@ public class ReplaceDialog extends JDialog {
 	     jp1.add(lb);
 	     jp1.add(btg);
 	     //
-	     add(jp1);
-	     
+	     add(jp1);	     
 	     pack();
 		 setResizable(false);
 		 setLocationRelativeTo(this);
-		 //
 		 setVisible(false);
 	}
 	
 	public void replaceEx(int start, int end){
-		m_owner.getTextPane().replaceSelection("");
+		m_textArea.replaceSelection("");
         
         try {
-			m_owner.getTextPane().getDocument().insertString(start, m_txtReplace2.getText(), null);
+        	m_textArea.getDocument().insertString(start, m_txtReplace2.getText(), null);
 			 
         } catch (BadLocationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
         }
-   	   m_owner.pane.setSelectionStart(start);
-		   m_owner.pane.setSelectionEnd(start+m_txtReplace2.getText().length());
+        m_textArea.setSelectionStart(start);
+        m_textArea.setSelectionEnd(start+m_txtReplace2.getText().length());
         
 		   m_replaceIndex = start+m_txtReplace2.getText().length();
 	}
 	
 	public void findNext(boolean doReplace, boolean showWarnings) {
-		 JEditorPane monitor = m_owner.getTextPane();
+		 //JEditorPane monitor = m_owner.getTextPane();
+		 RSyntaxTextArea monitor = m_textArea; 
 		 String key = null;
 		 String replacekey = null;
 		 int xStart = -1;
@@ -252,18 +258,20 @@ public class ReplaceDialog extends JDialog {
 	}
 	
 	protected void findReplaceEx(int pos, String key, String replacekey){
-		 
+		 //System.out.println("replace excuted");
 		 int xStart = m_searchData.indexOf(key);
+		 //System.out.println(xStart);
 		 int xFinish =0;
-		 if (xStart > 0){
+		 if (xStart >= 0){
 			 xStart += pos;			 
 			 if (m_replaceIndex != -1){
 				 m_searchIndex = xStart+replacekey.length();
 			 } else m_searchIndex = xStart+key.length();
 			 //
 			 xFinish = xStart+key.length();
-			 m_owner.pane.setSelectionStart(xStart);
-			 m_owner.pane.setSelectionEnd(xFinish);
+			 //m_owner.pane.setSelectionStart(xStart);
+			 m_textArea.select(xStart, xFinish);;
+			 //m_owner.pane.setSelectionEnd(xFinish);
 			 
 		 } else if (xStart < 0) {
 			 
@@ -287,14 +295,16 @@ public class ReplaceDialog extends JDialog {
 	
 	public void FindReplaceAll(boolean doReplace, boolean showWarnings) {
 		 
-		 int start = m_owner.getTextPane().getSelectionStart();
-         int end = m_owner.getTextPane().getSelectionEnd();
+		 //int start = m_owner.getTextPane().getSelectionStart();
+		int start = m_textArea.getSelectionStart();
+         int end = m_textArea.getSelectionEnd();
          System.out.println(start+" "+end);
          //this is important
          replaceEx(start, end);
          //
          while(true){
-        	 JEditorPane monitor = m_owner.getTextPane();
+        	 //JEditorPane monitor = m_owner.getTextPane();
+        	 RSyntaxTextArea monitor = m_textArea;
 			 String key = null;
 			 String replacekey = null;
 			 int xStart = -1;
@@ -332,8 +342,8 @@ public class ReplaceDialog extends JDialog {
 				 } else m_searchIndex = xStart+key.length();
 				 //
 				 xFinish = xStart+key.length();
-				 m_owner.pane.setSelectionStart(xStart);
-				 m_owner.pane.setSelectionEnd(xFinish);
+				 m_textArea.setSelectionStart(xStart);
+				 m_textArea.setSelectionEnd(xFinish);
 				 replaceEx(xStart, xFinish);
 				 
 			 } else if (xStart < 0) {
@@ -345,8 +355,8 @@ public class ReplaceDialog extends JDialog {
 					 if (m_searchIndex != -1){
 						 //
 						 xFinish = pos+key.length();
-						 m_owner.pane.setSelectionStart(xStart);
-						 m_owner.pane.setSelectionEnd(xFinish);
+						 m_textArea.setSelectionStart(xStart);
+						 m_textArea.setSelectionEnd(xFinish);
 						 
 					 }
 					 break;

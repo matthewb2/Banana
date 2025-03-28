@@ -1,6 +1,8 @@
 package oata;
 
 import java.awt.AWTKeyStroke;
+
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -9,6 +11,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,7 +44,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -84,6 +89,10 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.Utilities;
 import javax.swing.undo.UndoManager;
 
+
+import org.fife.ui.rtextarea.*;
+import org.fife.ui.rsyntaxtextarea.*;
+
 public class Banana extends JFrame  implements ActionListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, ListSelectionListener  {
 	  
 	  private static final long serialVersionUID = 1L;
@@ -93,6 +102,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  //
 	  private UndoManager undoManager = new UndoManager();
 	  static JEditorPane pane=null;
+	  protected RSyntaxTextArea textArea;
+	  
 	  protected FindDialog m_findDialog;
 	  protected ReplaceDialog m_replaceDialog;
 	  protected LetterDialog m_letterDialog;
@@ -100,6 +111,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  
 	  protected int m_pos=0;
 	  public JScrollPane editorScrollPane;
+	  public RTextScrollPane sp;
+	  
 	  public JPanel noWrapPanel;
 	  
 	  protected static File filePath=null;
@@ -178,7 +191,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			pane.setText(textOfFile);
+			textArea.setText(textOfFile);
 			//
 	  }
 	  
@@ -294,7 +307,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	      	statusp.setPreferredSize(new Dimension(this.getWidth(), 22));
 	      	statusp.setLayout(new FlowLayout(FlowLayout.RIGHT));
 	      	statusp.setBorder(BorderFactory.createEmptyBorder(5 , 0 , 5 , 0));
-	      	int caretPos = pane.getCaretPosition();
+	      	int caretPos = textArea.getCaretPosition();
 	      	int colNum = caretPos;
 	      	int rowNum = caretPos;
 	      	//
@@ -326,13 +339,25 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	        statusp.add(rowtextPanel);
 	        statusp.add(columntextPanel);
 	        statusp.add(typemodePanel);
+	        statusp.hide();
 	        //
 	    	this.getContentPane().add(statusp, BorderLayout.SOUTH);
 	    }
 
-	  public Banana() throws IOException {
+	  public String findExtension(String fileName) {
+		  String extension = "";
+
+		  int i = fileName.lastIndexOf('.');
+		  if (i > 0) {
+		      extension = fileName.substring(i+1);
+		  }
+		  return extension;
+		}
+	  
+	  public Banana() throws IOException, BadLocationException {
 		   
-		   JFrame frame;  
+		   //JFrame frame = null;
+		   
 		   JFileChooser fc;
 		   JLabel jl;
 		   JLabel fjl;
@@ -356,60 +381,55 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		   Style cwStyle = styleContext.addStyle("ConstantWidth", null);
 		   StyleConstants.setForeground(cwStyle, Color.BLUE);
 		   StyleConstants.setBold(cwStyle, false);
-		   //
 		   
-		   pane = new JTextPane();
-		   noWrapPanel = new JPanel( new BorderLayout() );
-		   noWrapPanel.add(pane );
+		   textArea = new RSyntaxTextArea(20, 60);
 	       
+		   
+		   textArea.setFont(textArea.getFont().deriveFont(14f)); // will only change size to 12pt
+	       textArea.setCodeFoldingEnabled(true);
+	       
+	       String str = "인기를 얻기 위해 행동하다라는 의미로, \n 대중 학문적인 진실보다는 대중의 환호를 추구하는 행위를 나타냅니다.";
+	       
+	       textArea.setText(str);
+	       
+	       
+	       sp = new RTextScrollPane(textArea);
+	        
+		   
 	       if (fileName !=null){
 	    	   
 	    	   setTitle(fileName + "- 바나나 텍스트 에디터");
-		       String str = "";
-		       File file = new File(fileName); 
-		       BufferedReader br = new BufferedReader(new FileReader(file)); 
-		       String st; 
-		       while ((st = br.readLine()) != null){ 
-		         //System.out.println(str);
-		       	 str +=st+"\n\r";
-		       } 
-		       //
-		       checkWrite();
-		       
-		       //
-		       String extension = "";
-		       int i = fileName.lastIndexOf('.');
-		       if (i > 0) {
-		           extension = fileName.substring(i+1);
-		       }
-		       
-		       switch (extension){
-		    	   case "java": 	   
-		    		   pane.setDocument(new JavaTokenMarker(defaultStyle));
-		    		   break;
-		    	   case "c": 	   
-		    		   pane.setDocument(new CTokenMarker(defaultStyle));
-		    		   break;
-		    	   default:
-		    		   pane.setDocument(new DefaultTokenMarker(defaultStyle));
-		    		   break;
-		    		   
-		       }
-		       //
-		          
-		       try{
-		   	    pane.getDocument().insertString(pane.getDocument().getLength(), str, null);
-		   	    //convert utf-8 to ansi 
-			    String res = convertFromUtf8ToIso(str);
-			    String rawString = res;
-				ByteBuffer buffer = StandardCharsets.UTF_8.encode(rawString); 
-				 
-				String utf8EncodedString = StandardCharsets.UTF_8.decode(buffer).toString();
+	    	   String ext = findExtension(fileName);
+	    	   
+	    	   switch( ext) {
+	    		   case "java":
+	    			   textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+	    		   case "py":
+	    			   textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);
+	    	   }
+	    	   
+	    	   
+	    	   BufferedReader br = null;
+		    	String str_line = "";
+		    	String textOfFile = "";
+				try {
+					br = new BufferedReader(new FileReader(fileName));
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					while ((str_line = br.readLine()) != null) {
+					    textOfFile = textOfFile + str_line + "\n";
+					   }
+					textArea.setText(textOfFile);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				//
-		       }catch (Exception e){
-		       }
 		       //
-		       fileContent = pane.getText();
+		       fileContent = textArea.getText();
 		       
 	       } else {
 	    	   setTitle("제목 없음 - 바나나 텍스트 에디터");
@@ -420,57 +440,26 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       if (os != null){
 	    	   if (os.matches("(.*)Windows(.*)")){
 		    	   //System.out.println(System.getenv("OS"));   
-		    	   pane.setFont(new Font("Arial", Font.PLAIN, 15));
+		    	   //pane.setFont(new Font("Arial", Font.PLAIN, 15));
 	    	   }
 	       } else {
-	    	   pane.setFont(pane.getFont().deriveFont(15f));
+	    	   //pane.setFont(pane.getFont().deriveFont(15f));
 	       }
 	       
-	       //JScrollPane editorScrollPane = new JScrollPane(pane);
-	       editorScrollPane = new JScrollPane(noWrapPanel );
-		   //
-		   add(editorScrollPane, BorderLayout.CENTER);	
-		       
-		   pane.addMouseListener(new MouseListener(){
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					
-					if(e.getButton() == java.awt.event.MouseEvent.BUTTON3){
-						showPopup(e);
-						
-					}
-				}
-	
-				@Override
-				public void mouseEntered(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-	
-				@Override
-				public void mouseExited(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-	
-				@Override
-				public void mousePressed(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-	
-				@Override
-				public void mouseReleased(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-				private void showPopup(MouseEvent e) {
-			              popup.show(e.getComponent(), e.getX(), e.getY());
-			    }
-				  
-		   });
+		   //add(editorScrollPane, BorderLayout.CENTER);	
+	       this.add(sp, BorderLayout.CENTER);
+	       
+	       Image icon_frame = ImageIO.read(getClass().getResource("res/714197.png"));
+	       
+		   this.setIconImage(icon_frame);
+
+		   Document doc = textArea.getDocument();
+		   //String str = "대중의 인기를 얻기 위해 행동하다라는 의미로, 학문적인 진실보다는 대중의 환호를 추구하는 행위를 나타냅니다.";
+		   //pane.setText(str);
 		   
-		   Document doc = pane.getDocument();
+		   //doc.insertString(0, str, defaultStyle);
+		   
+		   
 	       doc.addUndoableEditListener(new UndoableEditListener() {
 	           @Override
 	           public void undoableEditHappened(UndoableEditEvent e) {
@@ -479,8 +468,11 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	        	   }
 	           }
 	       });
+	       
+	       
+	       
 	
-	       pane.getActionMap().put("Undo", new AbstractAction("Undo") {
+	       textArea.getActionMap().put("Undo", new AbstractAction("Undo") {
 	           @Override
 	           public void actionPerformed(ActionEvent evt) {
 	               
@@ -490,10 +482,10 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	                
 	           }
 	       });
-	       pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MASK), "Undo");
+	       textArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MASK), "Undo");
 	       createStausBar();
 	       //createMenu();
-	       MenuEx me = new MenuEx(Banana.this);
+	       MenuEx me = new MenuEx(Banana.this, textArea);
 	       
 	       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	       setSize(650,550);
@@ -501,13 +493,14 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       //
 	       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 	       setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
-	       
+	       /*
 	       pane.addMouseListener(new MouseListener(){
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					//
 					JEditorPane src=(JEditorPane)e.getSource();
 					show_status_info(src);
+					statusp.show();
 					
 				}
 
@@ -535,7 +528,8 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 					
 				}
 	       });
-	       pane.addKeyListener(new KeyListener(){
+	       */
+	       textArea.addKeyListener(new KeyListener(){
 
 			@Override
 			public void keyPressed(KeyEvent arg0) {
@@ -657,6 +651,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 			String path = args[0];
 			filePath = new File(path);
 			fileName = filePath.getAbsolutePath();
+			System.out.println(fileName);
 			//
 		}
 		Banana ex = new Banana();

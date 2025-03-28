@@ -1,30 +1,45 @@
 <project name="Banana">
-
+	
+	<property name="src-dir" value="src" />
+	<property name="build-dir" value="build/classes" />
+	
     <target name="clean">
         <delete dir="build"/>
     </target>
 
     <target name="compile">
         <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes">
+        <javac srcdir="${src-dir}" destdir="${build-dir}">
 		  <compilerarg line="-Xlint" />
-		</javac>
-    	<copy todir="build/classes/oata">
-    				<fileset dir="src" includes="res/**/*.png"/>
+			
+	    	<classpath>
+	    	        	<pathelement path="${build-dir}/rsyntaxtextarea-3.3.3-SNAPSHOT.jar"/>
+	    	</classpath>
+        </javac>
+    	<copy todir="${build-dir}/oata">
+    				<fileset dir="${src-dir}" includes="res/**/*.png"/>
     	</copy>
     </target>
 
     <target name="jar">
         <mkdir dir="build/jar"/>
-        <jar destfile="build/jar/Banana.jar" basedir="build/classes">
+        <jar destfile="build/jar/Banana.jar" basedir="${build-dir}">
             <manifest>
-                <attribute name="Main-Class" value="oata.Main"/>
+                <attribute name="Main-Class" value="oata.Banana"/>
+            	<attribute name="Class-Path" value="rsyntaxtextarea-3.3.3-SNAPSHOT.jar"/>
             </manifest>
         </jar>
     </target>
 
-    <target name="run">
-        <java jar="build/jar/Banana.jar" fork="true"/>
+	<target name="run" depends="jar">
+    	<copy file="src/oata/res/history.txt" todir="build/jar"/>
+        
+		<java classname="oata.Banana"  fork="true">
+		        	<classpath>
+		        		<pathelement location="build/jar/Banana.jar"/>
+		        		<pathelement path="build/jar/rsyntaxtextarea-3.3.3-SNAPSHOT.jar"/>
+		        	</classpath>
+		    	</java>
     </target>
-
+	
 </project>

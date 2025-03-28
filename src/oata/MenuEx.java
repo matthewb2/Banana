@@ -30,11 +30,15 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+
 public class MenuEx {
 	Banana owner;
+	RSyntaxTextArea textArea;
 	JEditorPane pane;
-	MenuEx(Banana owner){
+	MenuEx(Banana owner, RSyntaxTextArea textArea){
 		this.owner = owner;
+		this.textArea = textArea;
 		createMenu();
 	}
 	public void createMenu(){
@@ -223,7 +227,7 @@ public class MenuEx {
 	       find_text.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
 	        	   if (owner.m_findDialog==null)
-	        		   owner.m_findDialog = new FindDialog(owner, 0);
+	        		   owner.m_findDialog = new FindDialog(owner, textArea, 0);
 	                 else
 	                	 owner.m_findDialog.setSelectedIndex(0);
 	                 Dimension d1 = owner.m_findDialog.getSize();
@@ -242,7 +246,7 @@ public class MenuEx {
 	       replace_text.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
 	        	   if (owner.m_replaceDialog==null)
-	        		   owner.m_replaceDialog = new ReplaceDialog(owner);
+	        		   owner.m_replaceDialog = new ReplaceDialog(owner, textArea);
 	               else{
 	                 }
 	                 Dimension d1 = owner.m_replaceDialog.getSize();
@@ -394,7 +398,7 @@ public class MenuEx {
 	       about.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
 	         	  AboutDialog ab = new AboutDialog();
-	              ab.version = "버전  0.2 엠케이솔루션 제공";
+	              ab.version = "바나나에디터 v0.2.3 엠케이솔루션 제공";
 	              ab.showDialog();
 	              ab.setVisible(true);
 	           }
