@@ -77,7 +77,7 @@ public class MenuEx {
 	    	   	 	save.setEnabled(false);
 	    	   	 	//
 	    	   	 	if (owner.fileContent !=null){
-	    	   	 		if (owner.fileContent.equals(owner.pane.getText())){
+	    	   	 		if (owner.fileContent.equals(textArea.getText())){
 	    	        	 save.setEnabled(false);
 	    	   	 		}
 	    	   	 		else {
@@ -178,7 +178,7 @@ public class MenuEx {
 	       close.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
 	               //System.exit(0);
-	        	   if (owner.fileContent.equals(owner.pane.getText()))
+	        	   if (owner.fileContent.equals(textArea.getText()))
 			           owner.dispose();
 	        	   else {
 			    	   int result = JOptionPane.showConfirmDialog(null, "변경 내용을"+owner.filePath.getAbsolutePath()+"에 저장할까요?", "바나나에디터", 
@@ -297,8 +297,7 @@ public class MenuEx {
 	        	   final FontChooserDialog fontchDialog = new FontChooserDialog(owner);
 	        	   //
 	        	   fontchDialog.addComponentListener(new ComponentListener() {										
-	        		   			
-		 					    public void componentHidden(ComponentEvent e)
+	        				    public void componentHidden(ComponentEvent e)
 		 					    {
 		 					    	//
 		 					    	//
@@ -365,7 +364,7 @@ public class MenuEx {
 				    String rawString = pane.getText();
 					ByteBuffer buffer = StandardCharsets.UTF_8.encode(rawString); 
 					String utf8EncodedString = StandardCharsets.UTF_8.decode(buffer).toString();
-					pane.setText(utf8EncodedString);
+					textArea.setText(utf8EncodedString);
 					//
 	           }
 	       });
@@ -398,7 +397,7 @@ public class MenuEx {
 	       about.addActionListener(new ActionListener() {
 	           public void actionPerformed(ActionEvent ev) {
 	         	  AboutDialog ab = new AboutDialog();
-	              ab.version = "바나나에디터 v0.2.3 엠케이솔루션 제공";
+	              //ab.version = "바나나에디터 v0.3.3 엠케이솔루션 제공";
 	              ab.showDialog();
 	              ab.setVisible(true);
 	           }

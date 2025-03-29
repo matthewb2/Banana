@@ -1,2 +1,3 @@
 2023-03-02 fix a file structure in build.xml 
 2023-03-03 used org.fife.rsyntaxtextarea library
+2025-03-31 some bug fixes

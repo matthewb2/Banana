@@ -32,8 +32,7 @@ public class AboutDialog  extends JFrame{
    
     JPanel p1 = new JPanel(); //JPanel 생성
     
-    String version;
-   
+    String version = "바나나에디터 v0.3.3 엠케이솔루션 제공";
  //Read file content into string with - Files.readAllBytes(Path path)
     
     private static String readAllBytesJava7(String filePath) 

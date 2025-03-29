@@ -24,6 +24,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.BadLocationException;
@@ -59,10 +60,14 @@ public class ReplaceDialog extends JDialog {
 		 m_owner = banana;
 		 m_textArea = textArea;
 		 m_tb = new JTabbedPane();
-		 JButton btnFindNext = new JButton("다음 찾기");
-		 JButton btnReplace = new JButton("바꾸기");
-		 JButton btnReplaceAll = new JButton("모두 바꾸기");
+		 JButton btnFindNext = new JButton("다음 찾기(F)");
+		 			btnFindNext.setMnemonic('C');
+		 JButton btnReplace = new JButton("바꾸기(R)");
+		 	btnReplace.setMnemonic('R');
+		 JButton btnReplaceAll = new JButton("모두 바꾸기(A)");
+		 	btnReplaceAll.setMnemonic('A');
 		 JButton btnClose = new JButton("닫기");
+		 	
 	     
 	     JPanel jp1 = new JPanel();
 	     jp1.setLayout(new BoxLayout(jp1, BoxLayout.X_AXIS));
@@ -294,75 +299,19 @@ public class ReplaceDialog extends JDialog {
 	}
 	
 	public void FindReplaceAll(boolean doReplace, boolean showWarnings) {
-		 
-		 //int start = m_owner.getTextPane().getSelectionStart();
-		int start = m_textArea.getSelectionStart();
-         int end = m_textArea.getSelectionEnd();
-         System.out.println(start+" "+end);
-         //this is important
-         replaceEx(start, end);
-         //
-         while(true){
-        	 //JEditorPane monitor = m_owner.getTextPane();
-        	 RSyntaxTextArea monitor = m_textArea;
-			 String key = null;
-			 String replacekey = null;
-			 int xStart = -1;
-			 int xFinish = -1;
-			 int pos = monitor.getCaretPosition();
-			 //
-			 Document doc = monitor.getDocument();
-			 		 
-			 try { 
-			 	 key = m_docFind.getText(0, m_docFind.getLength()); 
-			 	 replacekey = m_txtReplace2.getText();
-			 }
-			 catch (BadLocationException ex){
-			 }
-			 
-			 try {
-				m_searchData = doc.getText(pos, doc.getLength()-pos);
-				 
-			 } catch (BadLocationException e) {
-				// 
-				e.printStackTrace();
-			 }
-			 
-			 if (key.length()==0) {
-				 warning("검색할 문자열을 입력하십시오");
-				
-			 }
-			 //findReplaceEx(pos, key, replacekey);
-			 xStart = m_searchData.indexOf(key);
-			 xFinish =0;
-			 if (xStart > 0){
-				 xStart += pos;			 
-				 if (m_replaceIndex != -1){
-					 m_searchIndex = xStart+replacekey.length();
-				 } else m_searchIndex = xStart+key.length();
-				 //
-				 xFinish = xStart+key.length();
-				 m_textArea.setSelectionStart(xStart);
-				 m_textArea.setSelectionEnd(xFinish);
-				 replaceEx(xStart, xFinish);
-				 
-			 } else if (xStart < 0) {
-				 
-					 setVisible(false);
-					 //warning("문자열을 찾지 못 했습니다");
-					 m_searchIndex = -1;
-					 setVisible(true);
-					 if (m_searchIndex != -1){
-						 //
-						 xFinish = pos+key.length();
-						 m_textArea.setSelectionStart(xStart);
-						 m_textArea.setSelectionEnd(xFinish);
-						 
-					 }
-					 break;
-			 }
-         }
-		 
+	    String text = m_textArea.getText();
+        SwingUtilities.invokeLater(() -> {
+        //
+        	String target = null, replacement = null;
+            target = m_txtFind1.getText();
+            replacement = m_txtReplace2.getText();
+        
+            if (text.contains(target)) {
+               String new_text = text.replace(target, replacement);
+	           m_textArea.setText(new_text);
+        	}
+        
+        });
 		 
 	}	     
 }

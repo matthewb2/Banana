@@ -38,6 +38,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -66,8 +67,11 @@ import javax.swing.JScrollPane;
 
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MenuEvent;
@@ -122,6 +126,10 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	  protected JLabel rowtextlabel, columntextlabel, pagetextlabel, typemodelabel;
 	  protected JPanel statusp= new JPanel();
 	  
+	  int m_searchIndex = -1;
+	  protected int m_replaceIndex = -1;
+	  protected Document m_docFind;
+	  
 	  //Read file content into string with - Files.readAllBytes(Path path)
 	  private static String readAllBytesJava7(String filePath) 
 	  {
@@ -173,10 +181,11 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 			chooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			chooser.showOpenDialog(null);
 		    //
-	    	Document doc = (Document) pane.getDocument();
-	    	BufferedReader br = null;
+	    	Document doc = (Document) textArea.getDocument();
+	    	//BufferedReader br = null;
 	    	String str_line = "";
 	    	String textOfFile = "";
+	    	/*
 			try {
 				br = new BufferedReader(new FileReader(chooser.getSelectedFile()));
 			} catch (FileNotFoundException e1) {
@@ -192,6 +201,16 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 				e.printStackTrace();
 			}
 			textArea.setText(textOfFile);
+			*/
+	    	 try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(chooser.getSelectedFile()), StandardCharsets.UTF_8))) {
+	             String line;
+	             while ((line = br.readLine()) != null) {
+	                 textArea.append(line + "\n");
+	             }
+	         } catch (IOException e) {
+	             e.printStackTrace();
+	         }
+			
 			//
 	  }
 	  
@@ -235,7 +254,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 		    if (returnVal == chooser.APPROVE_OPTION) {
 		        File fileToSave = chooser.getSelectedFile();
 		        try {
-					  String content = pane.getText();
+					  String content = textArea.getText();
 					  content = content.replace("\n\r", "\n");
 					  BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave));
 					  writer.write(content);
@@ -390,9 +409,7 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	       
 	       String str = "인기를 얻기 위해 행동하다라는 의미로, \n 대중 학문적인 진실보다는 대중의 환호를 추구하는 행위를 나타냅니다.";
 	       
-	       textArea.setText(str);
-	       
-	       
+	              
 	       sp = new RTextScrollPane(textArea);
 	        
 		   
@@ -482,13 +499,48 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 	                
 	           }
 	       });
+	       
+	       
+	       //
+	       Document document = textArea.getDocument();
+	        document.addDocumentListener(new DocumentListener() {
+	            @Override
+	            public void insertUpdate(DocumentEvent e) {
+	                //textChanged();
+	            	System.out.println("text inserted");
+	                String text = textArea.getText();
+	                //System.out.println(text.length());
+	                String[] target = {"e's", "don't"};	                
+	                String[] replacement = {"e is", "do not"};
+	                SwingUtilities.invokeLater(() -> {
+	                // 
+	                for (int i = 0; i < target.length; i++) {
+	                    if (text.contains(target[i])) {
+		                   String new_text = text.replace(target[i], replacement[i]);
+		    	           textArea.setText(new_text);
+	                	}
+	                }
+	                });
+
+	            }
+
+	            @Override
+	            public void removeUpdate(DocumentEvent e) {
+	                //textChanged();
+	            }
+
+	            @Override
+	            public void changedUpdate(DocumentEvent e) {
+	                // 스타일 변경 등, 텍스트 내용 변경이 아닌 경우
+	            }
+	        });
 	       textArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MASK), "Undo");
 	       createStausBar();
 	       //createMenu();
 	       MenuEx me = new MenuEx(Banana.this, textArea);
 	       
 	       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	       setSize(650,550);
+	       setSize(820,650);
 	       setVisible(true);
 	       //
 	       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -550,10 +602,32 @@ public class Banana extends JFrame  implements ActionListener, MouseListener, Mo
 			}
 	    	   
 	       });
+	       //
+	       textArea.setText(str);
+	       //textArea.insert(str,0);
+	       System.out.println(textArea.getText().length());
+	       
     }
-
-	
-
+	  
+		public void replaceEx(int start, int end, String replacekey){
+			textArea.replaceSelection("");
+	        
+	        try {
+	        	textArea.getDocument().insertString(start, replacekey, null);
+				 
+	        } catch (BadLocationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+	        }
+	        
+	        textArea.setSelectionStart(start);
+	        textArea.setSelectionEnd(start+replacekey.length());
+	        
+			   m_replaceIndex = start+replacekey.length();
+		}
+		
+	  
+	  
 	@Override
 	public void valueChanged(ListSelectionEvent arg0) {
 		// TODO Auto-generated method stub
